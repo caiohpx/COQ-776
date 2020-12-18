@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Nov 25 17:45:31 2020
+
+@author: caioh
+"""
+
+import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+
+
+P_P0 = np.array([0.01098,
+                 0.03230,
+                 0.06267,
+                 0.07901,
+                 0.10240,
+                 0.12451,
+                 0.14620,
+                 0.16833,
+                 0.18937,
+                 0.21101,
+                 0.25759,
+                 0.34728,
+                 0.44483,
+                 0.56315,
+                 0.65702,
+                        ])
+Vads = np.array([27.56227,
+                 32.63736,
+                 36.5192,
+                 38.12323,
+                 40.14496,
+                 41.87338,
+                 43.47547,
+                 45.03983,
+                 46.49147,
+                 47.97321,
+                 51.15099,
+                 57.47639,
+                 65.28330,
+                 78.36594,
+                 96.23395,
+                         ])
+
+
+############## criando vetor y da equação de BET##################
+y = np.zeros(len(Vads))
+y = 1/(Vads*((1/(P_P0))-1))   
+# print(y)
+
+##############interpolando no intervalo comumumente usado##################
+slope, intercept, r_value, p_value, std_err = stats.linregress(P_P0[3:10], y[3:10]) # peguei somente os 3 primeiros pontos
+# print(r_value)
+Vm = 1/(slope+intercept)
+SBET = 4.35*Vm
+
+print(f'Vm = {Vm} cm³/g')
+print(f'área BET = {SBET} m²/g')
+print(f'R² = {r_value}')
+fig1 = plt.figure()
+plt.plot(P_P0, y, ".")
+plt.plot(P_P0[2:11], (intercept + slope*P_P0[2:11]))
+plt.xlabel('P/P0 ')
+plt.ylabel('1/(Vads*((P0/P)-1)) (g/cm³) ')
+
+
+################################### metodo t ######################################
+
+########## Equação Harkinsen e Jura ########################
+def t_HarkinseJura(P_P0):
+    return (13.99/(0.034-(np.log10(P_P0))))**(1/2)
+
+t = np.zeros(len(P_P0))
+t = t_HarkinseJura(P_P0)
+
+
+####################### Primeiro olha o gráfico depois escolhe o ponto#####################
+slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(t[4:9], Vads[4:9])   # nesse caso eu peguei olhando o gráfico, vi que estava legal a partir do 3.5  
+
+
+Vmicro = 0.0015468*intercept2
+Sext = 15.468*slope2
+print(f'Vmicro = {Vmicro} cm³/g')
+print(f'área ext = {Sext} m²/g')
+print(f'área micro = {SBET - Sext} m²/g')
+print(f'R²_t = {r_value2}')
+
+fig2 = plt.figure()
+plt.plot(t, Vads, '.' )
+plt.plot(t, intercept2 + slope2*t)
+plt.xlabel('t ')
+plt.ylabel('Vads (cm³/g) ')
+plt.show()
+
+                
